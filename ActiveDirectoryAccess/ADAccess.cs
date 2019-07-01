@@ -28,11 +28,14 @@ namespace ActiveDirectoryAccess
       public enum UserFilter 
         { SamAccountName, UserName , Description , EmailAddress, EmployeeId, GivenName, MiddleName, Surname, VoiceTelephoneNumber , AccountExpirationDate , DisplayName, PasswordNeverExpires , UserCannotChangePassword, Enabled }
 
+
+      //GroupScope = Gruppen Typ (Global,Universal,Lokal)
       public enum GroupFilter
-      {}
+      { SamAccountName, Name, Description, GroupScope, IsSecurityGroup, UserPrincipalName , DisplayName,}
+
+ 
 
 
-       
 
 
 
@@ -147,116 +150,98 @@ namespace ActiveDirectoryAccess
 
         }
 
-        public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(PrincipalSearchResult<Principal> results)
-        {
-            List<DirectoryEntry> de = new List<DirectoryEntry>();
-            //Umwandlung Principal->DirectoryEntry
-
-            foreach (Principal pc in results.ToList())
-            {
-                de.Add((DirectoryEntry)pc.GetUnderlyingObject());
-
-            }
-
-
-            
-            return de;
-        }
-
-        public List<DirectoryEntry> GetGroups(object filter, int searchmode)
+        public PrincipalSearchResult<Principal> SearchGroups(object filter, int searchmode)
         {
             // Einen Kontext zur entsprechenden Windows Domäne erstellen
             PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
                 _domain);
 
-           
+            //Ein "User-Objekt" im Kontext anlegen
             GroupPrincipal group = new GroupPrincipal(domainContext);
-
-            
             
 
-            /*switch (searchmode)
+            switch (searchmode)
             {
                 //Den Suchparameter angeben
-                case UserName:
+                case (int)GroupFilter.UserPrincipalName:
                     //Layout für Namen Suche = Vorname Nachname
-                    user.Name = filter.ToString();
+                    group.UserPrincipalName = filter.ToString();
                     break;
-                case SamAccountName:
-                    user.SamAccountName = filter.ToString();
+                case (int)GroupFilter.Description:
+                    group.Description = filter.ToString();
 
                     break;
-                case Description:
-                    user.Description = filter.ToString();
+                case (int)GroupFilter.DisplayName:
+                    group.DisplayName = filter.ToString();
 
                     break;
-                case EmailAddress:
-                    user.EmailAddress = filter.ToString();
+                case (int)GroupFilter.GroupScope:
+                    group.EmailAddress = filter.ToString();
 
                     break;
-                case EmployeeId:
-                    user.EmployeeId = filter.ToString();
+                case (int)UserFilter.EmployeeId:
+                    group.EmployeeId = filter.ToString();
 
                     break;
-                case GivenName:
-                    user.GivenName = filter.ToString();
+                case (int)UserFilter.GivenName:
+                    group.GivenName = filter.ToString();
 
                     break;
-                case MiddleName:
-                    user.MiddleName = filter.ToString();
+                case (int)UserFilter.MiddleName:
+                    group.MiddleName = filter.ToString();
 
                     break;
-                case Surname:
-                    user.Surname = filter.ToString();
+                case (int)UserFilter.Surname:
+                    group.Surname = filter.ToString();
 
                     break;
-                case VoiceTelephoneNumber:
-                    user.VoiceTelephoneNumber = filter.ToString();
+                case (int)UserFilter.VoiceTelephoneNumber:
+                    group.VoiceTelephoneNumber = filter.ToString();
 
                     break;
-                case AccountExpirationDate:
-                    user.AccountExpirationDate = Convert.ToDateTime(filter);
+                case (int)UserFilter.AccountExpirationDate:
+                    group.AccountExpirationDate = Convert.ToDateTime(filter);
                     break;
-                case DisplayName:
-                    user.DisplayName = filter.ToString();
+                case (int)UserFilter.DisplayName:
+                    group.DisplayName = filter.ToString();
 
                     break;
-                case PasswordNeverExpires:
-                    user.PasswordNeverExpires = Convert.ToBoolean(filter);
+                case (int)UserFilter.PasswordNeverExpires:
+                    group.PasswordNeverExpires = Convert.ToBoolean(filter);
                     break;
-                case UserCannotChangePassword:
-                    user.UserCannotChangePassword = Convert.ToBoolean(filter);
+                case (int)UserFilter.UserCannotChangePassword:
+                    group.UserCannotChangePassword = Convert.ToBoolean(filter);
                     break;
-                case Enabled:
-                    user.Enabled = Convert.ToBoolean(filter);
+                case (int)UserFilter.Enabled:
+                    group.Enabled = Convert.ToBoolean(filter);
                     break;
                 default:
                     throw new Exception("Error: Filter is less than 0 or greater than 13");
-            }*/
+            }
 
 
             //Den Sucher anlegen und ihm die Suchkriterien
             //(unser User-Objekt) übergeben
-
-            group.
-
             PrincipalSearcher pS = new PrincipalSearcher();
-            pS.QueryFilter = user;
+            pS.QueryFilter = group;
 
             //Die Suche durchführen
             PrincipalSearchResult<Principal> results = pS.FindAll();
+            return results;
 
-            List<DirectoryEntry> de = new List<DirectoryEntry>();
-            //Bei Bedarf weitere Details abfragen
-            foreach (Principal pc in results.ToList())
-            {
-                de.Add((DirectoryEntry)pc.GetUnderlyingObject());
+        }
 
-            }
+        public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(PrincipalSearchResult<Principal> results)
+        {
+            return (
+                //Umwandlung Principal->DirectoryEntry
+                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry) pc.GetUnderlyingObject())).ToList();
 
+        }
 
-            //Erstes Ergebnis zum Test ausgeben
-            return de;
+        public List<DirectoryEntry> GetUsers(object filter, int searchmode)
+        {
+            return ConvertPrincipalsToDirectoryEntries(SearchUsers(filter, searchmode));
 
         }
 

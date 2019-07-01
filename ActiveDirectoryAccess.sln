@@ -5,16 +5,29 @@ VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveDirectoryAccess", "ActiveDirectoryAccess\ActiveDirectoryAccess.csproj", "{332E19FE-5AAA-47E1-9702-14E60FA341D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdAccessTest1", "AdAccessTest1\AdAccessTest1.csproj", "{0C6F8D7B-5C89-4D7C-A846-05B109523D6B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{332E19FE-5AAA-47E1-9702-14E60FA341D0} = {332E19FE-5AAA-47E1-9702-14E60FA341D0}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		test1|Any CPU = test1|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{332E19FE-5AAA-47E1-9702-14E60FA341D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{332E19FE-5AAA-47E1-9702-14E60FA341D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{332E19FE-5AAA-47E1-9702-14E60FA341D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{332E19FE-5AAA-47E1-9702-14E60FA341D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{332E19FE-5AAA-47E1-9702-14E60FA341D0}.test1|Any CPU.ActiveCfg = test1|Any CPU
+		{0C6F8D7B-5C89-4D7C-A846-05B109523D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C6F8D7B-5C89-4D7C-A846-05B109523D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C6F8D7B-5C89-4D7C-A846-05B109523D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C6F8D7B-5C89-4D7C-A846-05B109523D6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C6F8D7B-5C89-4D7C-A846-05B109523D6B}.test1|Any CPU.ActiveCfg = test1|Any CPU
+		{0C6F8D7B-5C89-4D7C-A846-05B109523D6B}.test1|Any CPU.Build.0 = test1|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

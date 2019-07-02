@@ -20,6 +20,10 @@ namespace AdAccessTest1
             for (int i = 0; i < de.Count; i++)
                 Console.WriteLine(de[i].Properties["SamAccountName"].Value.ToString());
 
+            de = ad.GetGroups("BFI11a", (int)AdAccess.GroupFilter.Name);
+            
+            for (int i = 0; i < de.Count; i++)
+                Console.WriteLine(de[i].Properties["SamAccountName"].Value.ToString());
             Console.ReadKey();
         }
     }

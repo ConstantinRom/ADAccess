@@ -162,10 +162,13 @@ namespace ActiveDirectoryAccess
 
             switch (searchmode)
             {
+               
+
                 //Den Suchparameter angeben
                 case (int)GroupFilter.UserPrincipalName:
                     //Layout für Namen Suche = Vorname Nachname
                     group.UserPrincipalName = filter.ToString();
+                    
                     break;
                 case (int)GroupFilter.Description:
                     group.Description = filter.ToString();
@@ -173,50 +176,25 @@ namespace ActiveDirectoryAccess
                     break;
                 case (int)GroupFilter.DisplayName:
                     group.DisplayName = filter.ToString();
-
+                    
                     break;
                 case (int)GroupFilter.GroupScope:
-                    group.EmailAddress = filter.ToString();
+                    group.GroupScope = (GroupScope)Convert.ToInt32(filter);
 
                     break;
-                case (int)UserFilter.EmployeeId:
-                    group.EmployeeId = filter.ToString();
+                case (int)GroupFilter.IsSecurityGroup:
+                    group.IsSecurityGroup = Convert.ToBoolean(filter);
+                    break;
+                case (int)GroupFilter.SamAccountName:
+                    group.SamAccountName = filter.ToString();
+                    break;
 
+                case (int)GroupFilter.Name:
+                    group.Name = filter.ToString();
                     break;
-                case (int)UserFilter.GivenName:
-                    group.GivenName = filter.ToString();
 
-                    break;
-                case (int)UserFilter.MiddleName:
-                    group.MiddleName = filter.ToString();
-
-                    break;
-                case (int)UserFilter.Surname:
-                    group.Surname = filter.ToString();
-
-                    break;
-                case (int)UserFilter.VoiceTelephoneNumber:
-                    group.VoiceTelephoneNumber = filter.ToString();
-
-                    break;
-                case (int)UserFilter.AccountExpirationDate:
-                    group.AccountExpirationDate = Convert.ToDateTime(filter);
-                    break;
-                case (int)UserFilter.DisplayName:
-                    group.DisplayName = filter.ToString();
-
-                    break;
-                case (int)UserFilter.PasswordNeverExpires:
-                    group.PasswordNeverExpires = Convert.ToBoolean(filter);
-                    break;
-                case (int)UserFilter.UserCannotChangePassword:
-                    group.UserCannotChangePassword = Convert.ToBoolean(filter);
-                    break;
-                case (int)UserFilter.Enabled:
-                    group.Enabled = Convert.ToBoolean(filter);
-                    break;
                 default:
-                    throw new Exception("Error: Filter is less than 0 or greater than 13");
+                    throw new Exception("Error: Filter is less than 0 or greater than 6");
             }
 
 
@@ -243,6 +221,11 @@ namespace ActiveDirectoryAccess
         {
             return ConvertPrincipalsToDirectoryEntries(SearchUsers(filter, searchmode));
 
+        }
+
+        public List<DirectoryEntry> GetGroups(object filter, int seachmode)
+        {
+            return ConvertPrincipalsToDirectoryEntries(SearchGroups(filter, seachmode));
         }
 
     }

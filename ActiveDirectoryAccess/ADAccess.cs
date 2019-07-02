@@ -25,15 +25,15 @@ namespace ActiveDirectoryAccess
         public const int UserName = 1;
 
         //Für die Suche nach Beschreibung (in der Schule steht hier die Schüler Id
-      public enum UserFilter 
-        { SamAccountName, UserName , Description , EmailAddress, EmployeeId, GivenName, MiddleName, Surname, VoiceTelephoneNumber , AccountExpirationDate , DisplayName, PasswordNeverExpires , UserCannotChangePassword, Enabled }
+        public enum UserFilter
+        { SamAccountName, UserName, Description, EmailAddress, EmployeeId, GivenName, MiddleName, Surname, VoiceTelephoneNumber, AccountExpirationDate, DisplayName, PasswordNeverExpires, UserCannotChangePassword, Enabled }
 
 
-      //GroupScope = Gruppen Typ (Global,Universal,Lokal)
-      public enum GroupFilter
-      { SamAccountName, Name, Description, GroupScope, IsSecurityGroup, UserPrincipalName , DisplayName,}
+        //GroupScope = Gruppen Typ (Global,Universal,Lokal)
+        public enum GroupFilter
+        { SamAccountName, Name, Description, GroupScope, IsSecurityGroup, UserPrincipalName, DisplayName, }
 
- 
+
 
 
 
@@ -88,42 +88,42 @@ namespace ActiveDirectoryAccess
                     break;
                 case (int)UserFilter.SamAccountName:
                     user.SamAccountName = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.Description:
                     user.Description = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.EmailAddress:
                     user.EmailAddress = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.EmployeeId:
                     user.EmployeeId = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.GivenName:
                     user.GivenName = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.MiddleName:
                     user.MiddleName = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.Surname:
                     user.Surname = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.VoiceTelephoneNumber:
                     user.VoiceTelephoneNumber = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.AccountExpirationDate:
                     user.AccountExpirationDate = Convert.ToDateTime(filter);
                     break;
                 case (int)UserFilter.DisplayName:
                     user.DisplayName = filter.ToString();
-                    
+
                     break;
                 case (int)UserFilter.PasswordNeverExpires:
                     user.PasswordNeverExpires = Convert.ToBoolean(filter);
@@ -137,7 +137,7 @@ namespace ActiveDirectoryAccess
                 default:
                     throw new Exception("Error: Filter is less than 0 or greater than 13");
             }
-            
+
 
             //Den Sucher anlegen und ihm die Suchkriterien
             //(unser User-Objekt) übergeben
@@ -158,17 +158,17 @@ namespace ActiveDirectoryAccess
 
             //Ein "User-Objekt" im Kontext anlegen
             GroupPrincipal group = new GroupPrincipal(domainContext);
-            
+
 
             switch (searchmode)
             {
-               
+
 
                 //Den Suchparameter angeben
                 case (int)GroupFilter.UserPrincipalName:
                     //Layout für Namen Suche = Vorname Nachname
                     group.UserPrincipalName = filter.ToString();
-                    
+
                     break;
                 case (int)GroupFilter.Description:
                     group.Description = filter.ToString();
@@ -176,7 +176,7 @@ namespace ActiveDirectoryAccess
                     break;
                 case (int)GroupFilter.DisplayName:
                     group.DisplayName = filter.ToString();
-                    
+
                     break;
                 case (int)GroupFilter.GroupScope:
                     group.GroupScope = (GroupScope)Convert.ToInt32(filter);
@@ -191,6 +191,7 @@ namespace ActiveDirectoryAccess
 
                 case (int)GroupFilter.Name:
                     group.Name = filter.ToString();
+
                     break;
 
                 default:
@@ -213,7 +214,7 @@ namespace ActiveDirectoryAccess
         {
             return (
                 //Umwandlung Principal->DirectoryEntry
-                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry) pc.GetUnderlyingObject())).ToList();
+                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
 
         }
 
@@ -228,9 +229,14 @@ namespace ActiveDirectoryAccess
             return ConvertPrincipalsToDirectoryEntries(SearchGroups(filter, seachmode));
         }
 
-    }
+   
+    
+    } 
 
 
-}
+ }
+
+
+
 
 

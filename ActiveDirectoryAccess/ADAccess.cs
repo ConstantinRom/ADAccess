@@ -75,6 +75,7 @@ namespace ActiveDirectoryAccess
 
             for (int i = 0; i < searchmode.Length; i++)
             {
+
                 switch (i)
                 {
 
@@ -82,59 +83,60 @@ namespace ActiveDirectoryAccess
                     //Den Suchparameter angeben
                     case (int)UserFilter.UserName:
                         //Layout für Namen Suche = Vorname Nachname
-                        user.Name = filter[i].ToString();
+                        user.Name = filter.ToString();
                         break;
                     case (int)UserFilter.SamAccountName:
-                        user.SamAccountName = filter[i].ToString();
+                        user.SamAccountName = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.Description:
-                        user.Description = filter[i].ToString();
+                        user.Description = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.EmailAddress:
-                        user.EmailAddress = filter[i].ToString();
+                        user.EmailAddress = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.EmployeeId:
-                        user.EmployeeId = filter[i].ToString();
+                        user.EmployeeId = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.GivenName:
-                        user.GivenName = filter[i].ToString();
+                        user.GivenName = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.MiddleName:
-                        user.MiddleName = filter[i].ToString();
+                        user.MiddleName = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.Surname:
-                        user.Surname = filter[i].ToString();
+                        user.Surname = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.VoiceTelephoneNumber:
-                        user.VoiceTelephoneNumber = filter[i].ToString();
+                        user.VoiceTelephoneNumber = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.AccountExpirationDate:
-                        user.AccountExpirationDate = Convert.ToDateTime(filter[i]);
+                        user.AccountExpirationDate = Convert.ToDateTime(filter[1]);
                         break;
                     case (int)UserFilter.DisplayName:
-                        user.DisplayName = filter[i].ToString();
+                        user.DisplayName = filter[1].ToString();
 
                         break;
                     case (int)UserFilter.PasswordNeverExpires:
-                        user.PasswordNeverExpires = Convert.ToBoolean(filter[i]);
+                        user.PasswordNeverExpires = Convert.ToBoolean(filter[1]);
                         break;
                     case (int)UserFilter.UserCannotChangePassword:
-                        user.UserCannotChangePassword = Convert.ToBoolean(filter[i]);
+                        user.UserCannotChangePassword = Convert.ToBoolean(filter[1]);
                         break;
                     case (int)UserFilter.Enabled:
-                        user.Enabled = Convert.ToBoolean(filter[i]);
+                        user.Enabled = Convert.ToBoolean(filter[1]);
                         break;
                     default:
                         throw new Exception("Error: Filter is less than 0 or greater than 13");
                 }
+
             }
 
 
@@ -219,21 +221,7 @@ namespace ActiveDirectoryAccess
 
         }
 
-        public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(List<UserPrincipal> results)
-        {
-            return (
-                //Umwandlung Principal->DirectoryEntry
-                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
-
-        }
-
-        public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(List<GroupPrincipal> results)
-        {
-            return (
-                //Umwandlung Principal->DirectoryEntry
-                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
-
-        }
+        
 
 
 
@@ -248,23 +236,16 @@ namespace ActiveDirectoryAccess
             return ConvertPrincipalsToDirectoryEntries(SearchGroups(filter, seachmode));
         }
 
-        public List<UserPrincipal> SearchMembersinGroup(string groupname)
+        public PrincipalSearchResult<Principal> SearchMembersinGroup(string groupname)
         {
-            List<UserPrincipal> users = new List<UserPrincipal>();
+            
             PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
                 _domain);
 
 
             GroupPrincipal group = GroupPrincipal.FindByIdentity(domainContext, groupname);
-
-            if (group != null)
-            {
-                
-                
-
-                foreach (Principal p in group.GetMembers())
-                { users.Add((UserPrincipal)p); }                        
-            }
+            PrincipalSearchResult<Principal> users = group.GetMembers();
+            
          
             return users;
         }
@@ -279,6 +260,11 @@ namespace ActiveDirectoryAccess
         }
    
     
+        private UserPrincipal userfilters(object filter,int i,UserPrincipal user)
+        {
+            
+            return user;
+        }
      } 
 
 

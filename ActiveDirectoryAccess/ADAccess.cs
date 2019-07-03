@@ -256,10 +256,16 @@ namespace ActiveDirectoryAccess
 
         public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(List<GroupPrincipal> results)
         {
-            return (
-                //Umwandlung Principal->DirectoryEntry
-                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
+          
 
+                
+                    //Umwandlung Principal->DirectoryEntry
+                  return results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject()).ToList();
+
+            
+           
+
+            
         }
 
 
@@ -283,67 +289,70 @@ namespace ActiveDirectoryAccess
                 checkredundancy = new List<Principal>();
             }
 
+            List<UserPrincipal> users = new List<UserPrincipal>();
             PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
                 _domain);
-
+      
 
             GroupPrincipal group = GroupPrincipal.FindByIdentity(domainContext, groupname);
-
-            PrincipalSearchResult<Principal> results = group.GetMembers();
-            List<UserPrincipal> users = new List<UserPrincipal>();
-
-
-            foreach (Principal p in results)
+            if (group != null)
             {
-                if (p is GroupPrincipal && searchsubgroupmembers)
-                {
-                    bool found = false;
+                PrincipalSearchResult<Principal> results = group.GetMembers();
 
-                    foreach (Principal p2 in checkredundancy)
+               
+
+
+                foreach (Principal p in results)
+                {
+                    if (p is GroupPrincipal && searchsubgroupmembers)
                     {
-                        if (p2 is GroupPrincipal)
+                        bool found = false;
+
+                        foreach (Principal p2 in checkredundancy)
                         {
-                            if (((GroupPrincipal)p2).Name.Equals(((GroupPrincipal)p).Name))
+                            if (p2 is GroupPrincipal)
                             {
-                                found = true;
-                                break;
+                                if (((GroupPrincipal)p2).Name.Equals(((GroupPrincipal)p).Name))
+                                {
+                                    found = true;
+                                    break;
+                                }
                             }
+                        }
+
+                        if (!found)
+                        {
+                            checkredundancy.Add((GroupPrincipal)p);
+                            users.AddRange(SearchMembersinGroup(p.SamAccountName, true, checkredundancy));
                         }
                     }
 
-                    if (!found)
+                    else if (p is UserPrincipal)
                     {
-                        checkredundancy.Add((GroupPrincipal)p);
-                        users.AddRange(SearchMembersinGroup(p.SamAccountName, true, checkredundancy));
-                    }
-                }
+                        bool found = false;
 
-                else if (p is UserPrincipal)
-                {
-                    bool found = false;
-
-                    foreach (Principal p2 in checkredundancy)
-                    {
-                        if (p2 is UserPrincipal)
+                        foreach (Principal p2 in checkredundancy)
                         {
-                            if (((UserPrincipal)p2).Name.Equals(((UserPrincipal)p).Name))
+                            if (p2 is UserPrincipal)
                             {
-                                found = true;
-                                break;
+                                if (((UserPrincipal)p2).Name.Equals(((UserPrincipal)p).Name))
+                                {
+                                    found = true;
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    if (!found)
-                    {
-                        checkredundancy.Add(p);
-                        users.Add((UserPrincipal)p);
+                        if (!found)
+                        {
+                            checkredundancy.Add(p);
+                            users.Add((UserPrincipal)p);
+                        }
                     }
                 }
+
+
             }
-
-
-
 
 
             return users;
@@ -352,7 +361,7 @@ namespace ActiveDirectoryAccess
 
 
 
-
+        //Sicherheit Prinzipal fix
 
         public List<GroupPrincipal> SearchSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
@@ -360,52 +369,55 @@ namespace ActiveDirectoryAccess
             {
                 checkredundancy = new List<Principal>();
             }
-
+            List<GroupPrincipal> groups = new List<GroupPrincipal>();
             PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
                 _domain);
 
 
             GroupPrincipal group = GroupPrincipal.FindByIdentity(domainContext, groupname);
-            PrincipalSearchResult<Principal> results = group.GetMembers();
-            List<GroupPrincipal> groups = new List<GroupPrincipal>();
 
-
-            foreach (Principal p in results)
+            if (group != null)
             {
+                PrincipalSearchResult<Principal> results = group.GetMembers();
+               
 
 
-                if (p is GroupPrincipal)
+                foreach (Principal p in results)
                 {
-                    bool found = false;
 
-                    foreach (Principal p2 in checkredundancy)
+
+                    if (p is GroupPrincipal)
                     {
-                        if (p2 is GroupPrincipal)
+                        bool found = false;
+
+                        foreach (Principal p2 in checkredundancy)
                         {
-                            if (((GroupPrincipal)p2).Name.Equals(((GroupPrincipal)p).Name))
+                            if (p2 is GroupPrincipal)
                             {
-                                found = true;
-                                break;
+                                if (((GroupPrincipal)p2).Name.Equals(((GroupPrincipal)p).Name))
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!found)
+                        {
+                            checkredundancy.Add((GroupPrincipal)p);
+                            groups.Add((GroupPrincipal)p);
+
+                            if (searchsubgroupmembers)
+                            {
+                                groups.AddRange(SearchSubGroups(p.SamAccountName, true, checkredundancy));
                             }
                         }
                     }
 
-                    if (!found)
-                    {
-                        checkredundancy.Add((GroupPrincipal)p);
-                        groups.Add((GroupPrincipal)p);
 
-                        if (searchsubgroupmembers)
-                        {
-                            groups.AddRange(SearchSubGroups(p.SamAccountName, true, checkredundancy));
-                        }
-                    }
                 }
 
-
             }
-
-
 
             return groups;
 

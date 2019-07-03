@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
 
 namespace ActiveDirectoryAccess
 {
@@ -18,15 +20,38 @@ namespace ActiveDirectoryAccess
 
 
 
-       
+
         //Für die Suche nach Beschreibung (in der Schule steht hier die Schüler Id
         public enum UserFilter
-        { SamAccountName, UserName, Description, EmailAddress, EmployeeId, GivenName, MiddleName, Surname, VoiceTelephoneNumber, AccountExpirationDate, DisplayName, PasswordNeverExpires, UserCannotChangePassword, Enabled }
+        {
+            SamAccountName,
+            UserName,
+            Description,
+            EmailAddress,
+            EmployeeId,
+            GivenName,
+            MiddleName,
+            Surname,
+            VoiceTelephoneNumber,
+            AccountExpirationDate,
+            DisplayName,
+            PasswordNeverExpires,
+            UserCannotChangePassword,
+            Enabled
+        }
 
 
         //GroupScope = Gruppen Typ (Global,Universal,Lokal)
         public enum GroupFilter
-        { SamAccountName, Name, Description, GroupScope, IsSecurityGroup, UserPrincipalName, DisplayName, }
+        {
+            SamAccountName,
+            Name,
+            Description,
+            GroupScope,
+            IsSecurityGroup,
+            UserPrincipalName,
+            DisplayName,
+        }
 
 
 
@@ -86,52 +111,52 @@ namespace ActiveDirectoryAccess
                         user.Name = filter.ToString();
                         break;
                     case (int)UserFilter.SamAccountName:
-                        user.SamAccountName = filter[1].ToString();
+                        user.SamAccountName = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.Description:
-                        user.Description = filter[1].ToString();
+                        user.Description = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.EmailAddress:
-                        user.EmailAddress = filter[1].ToString();
+                        user.EmailAddress = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.EmployeeId:
-                        user.EmployeeId = filter[1].ToString();
+                        user.EmployeeId = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.GivenName:
-                        user.GivenName = filter[1].ToString();
+                        user.GivenName = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.MiddleName:
-                        user.MiddleName = filter[1].ToString();
+                        user.MiddleName = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.Surname:
-                        user.Surname = filter[1].ToString();
+                        user.Surname = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.VoiceTelephoneNumber:
-                        user.VoiceTelephoneNumber = filter[1].ToString();
+                        user.VoiceTelephoneNumber = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.AccountExpirationDate:
-                        user.AccountExpirationDate = Convert.ToDateTime(filter[1]);
+                        user.AccountExpirationDate = Convert.ToDateTime(filter[i]);
                         break;
                     case (int)UserFilter.DisplayName:
-                        user.DisplayName = filter[1].ToString();
+                        user.DisplayName = filter[i].ToString();
 
                         break;
                     case (int)UserFilter.PasswordNeverExpires:
-                        user.PasswordNeverExpires = Convert.ToBoolean(filter[1]);
+                        user.PasswordNeverExpires = Convert.ToBoolean(filter[i]);
                         break;
                     case (int)UserFilter.UserCannotChangePassword:
-                        user.UserCannotChangePassword = Convert.ToBoolean(filter[1]);
+                        user.UserCannotChangePassword = Convert.ToBoolean(filter[i]);
                         break;
                     case (int)UserFilter.Enabled:
-                        user.Enabled = Convert.ToBoolean(filter[1]);
+                        user.Enabled = Convert.ToBoolean(filter[i]);
                         break;
                     default:
                         throw new Exception("Error: Filter is less than 0 or greater than 13");
@@ -221,7 +246,22 @@ namespace ActiveDirectoryAccess
 
         }
 
-        
+        public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(List<UserPrincipal> results)
+        {
+            return (
+                //Umwandlung Principal->DirectoryEntry
+                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
+
+        }
+
+        public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(List<GroupPrincipal> results)
+        {
+            return (
+                //Umwandlung Principal->DirectoryEntry
+                results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
+
+        }
+
 
 
 
@@ -236,39 +276,160 @@ namespace ActiveDirectoryAccess
             return ConvertPrincipalsToDirectoryEntries(SearchGroups(filter, seachmode));
         }
 
-        public PrincipalSearchResult<Principal> SearchMembersinGroup(string groupname)
+        public List<UserPrincipal> SearchMembersinGroup(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
-            
+            if (checkredundancy == null)
+            {
+                checkredundancy = new List<Principal>();
+            }
+
             PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
                 _domain);
 
 
             GroupPrincipal group = GroupPrincipal.FindByIdentity(domainContext, groupname);
-            PrincipalSearchResult<Principal> users = group.GetMembers();
-            
-         
+
+            PrincipalSearchResult<Principal> results = group.GetMembers();
+            List<UserPrincipal> users = new List<UserPrincipal>();
+
+
+            foreach (Principal p in results)
+            {
+                if (p is GroupPrincipal && searchsubgroupmembers)
+                {
+                    bool found = false;
+
+                    foreach (Principal p2 in checkredundancy)
+                    {
+                        if (p2 is GroupPrincipal)
+                        {
+                            if (((GroupPrincipal)p2).Name.Equals(((GroupPrincipal)p).Name))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        checkredundancy.Add((GroupPrincipal)p);
+                        users.AddRange(SearchMembersinGroup(p.SamAccountName, true, checkredundancy));
+                    }
+                }
+
+                else if (p is UserPrincipal)
+                {
+                    bool found = false;
+
+                    foreach (Principal p2 in checkredundancy)
+                    {
+                        if (p2 is UserPrincipal)
+                        {
+                            if (((UserPrincipal)p2).Name.Equals(((UserPrincipal)p).Name))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        checkredundancy.Add(p);
+                        users.Add((UserPrincipal)p);
+                    }
+                }
+            }
+
+
+
+
+
             return users;
         }
 
 
 
 
-        public List<DirectoryEntry> GetMembersinGroup(string groupname)
+
+
+        public List<GroupPrincipal> SearchSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
-            return ConvertPrincipalsToDirectoryEntries(SearchMembersinGroup(groupname));
+            if (checkredundancy == null)
+            {
+                checkredundancy = new List<Principal>();
+            }
+
+            PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
+                _domain);
+
+
+            GroupPrincipal group = GroupPrincipal.FindByIdentity(domainContext, groupname);
+            PrincipalSearchResult<Principal> results = group.GetMembers();
+            List<GroupPrincipal> groups = new List<GroupPrincipal>();
+
+
+            foreach (Principal p in results)
+            {
+
+
+                if (p is GroupPrincipal)
+                {
+                    bool found = false;
+
+                    foreach (Principal p2 in checkredundancy)
+                    {
+                        if (p2 is GroupPrincipal)
+                        {
+                            if (((GroupPrincipal)p2).Name.Equals(((GroupPrincipal)p).Name))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        checkredundancy.Add((GroupPrincipal)p);
+                        groups.Add((GroupPrincipal)p);
+
+                        if (searchsubgroupmembers)
+                        {
+                            groups.AddRange(SearchSubGroups(p.SamAccountName, true, checkredundancy));
+                        }
+                    }
+                }
+
+
+            }
+
+
+
+            return groups;
 
         }
-   
-    
-        private UserPrincipal userfilters(object filter,int i,UserPrincipal user)
+
+
+
+        public List<DirectoryEntry> GetMembersinGroup(string groupname, bool searchsubgroupmembers)
         {
-            
-            return user;
+            return ConvertPrincipalsToDirectoryEntries(SearchMembersinGroup(groupname, searchsubgroupmembers));
+
         }
-     } 
+
+        public List<DirectoryEntry> GetSubGroups(string groupname, bool searchsubgroupmembers)
+        {
+            return ConvertPrincipalsToDirectoryEntries(SearchSubGroups(groupname, searchsubgroupmembers));
+
+        }
 
 
- }
+    }
+
+
+}
 
 
 

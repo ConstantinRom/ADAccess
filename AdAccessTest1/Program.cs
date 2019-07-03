@@ -15,7 +15,7 @@ namespace AdAccessTest1
             Console.WriteLine("Test123");
             Console.ReadKey();
             AdAccess ad = new AdAccess("BSZ.local");
-            List<DirectoryEntry> de = ad.GetUsers(new string[] { "r*","con*" }, new int[] { (int)AdAccess.UserFilter.SamAccountName,(int)AdAccess.UserFilter.UserName });
+            List<DirectoryEntry> de = ad.GetUsers(new string[] { "*con*" }, new int[] { (int)AdAccess.UserFilter.SamAccountName });
            
             //1. Test Namen ausgabe
             Console.WriteLine(de.Count);
@@ -25,12 +25,16 @@ namespace AdAccessTest1
 
 
             //2.Test Gruppen ausgabe
-            de = ad.GetGroups(new string[] { "BFI*" },  new int[] { (int)AdAccess.GroupFilter.Name });                   
+            de = ad.GetGroups(new string[] { "test" },  new int[] { (int)AdAccess.GroupFilter.Name });                   
             for (int i = 0; i < de.Count; i++)
                 Console.WriteLine(de[i].Properties["SamAccountName"].Value.ToString());
 
+            
+            de = ad.GetMembersinGroup("test",true);
+            for (int i = 0; i < de.Count; i++)
+                Console.WriteLine(de[i].Properties["SamAccountName"].Value.ToString());
 
-            de = ad.GetMembersinGroup("BFI11a");
+            de = ad.GetSubGroups("test", true);
             for (int i = 0; i < de.Count; i++)
                 Console.WriteLine(de[i].Properties["SamAccountName"].Value.ToString());
             Console.ReadKey();

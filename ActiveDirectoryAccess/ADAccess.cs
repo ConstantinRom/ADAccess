@@ -343,12 +343,6 @@ namespace ActiveDirectoryAccess
         }
 
 
-        [Obsolete("verltete methjode")]
-
-        public void test()
-        {
-            MessageBox.Show("Hello");
-        }
 
 
         /// <summary>
@@ -451,19 +445,16 @@ namespace ActiveDirectoryAccess
             return users;
         }
 
-
-
-
-        /// <summary>
-        /// SearchSubGroups() Methode zum Suchen von Sub-Gruppen in einer Domäne 
-        /// Wichtig!!!:liefert nur ein Suchergebnis (PrincipalSearchResult)
-        /// Zum umwandeln in ein DirectoryEntry muss ConvertPrincipalsToDirectoryEntries();
-        /// benutzt werden oder wenn man gleich ein DirectoryEntry will muss man GetUsersDirectoryEntry() benutzen
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <param name="searchmode"></param>
-        /// <returns></returns>
-        public List<GroupPrincipal> SearchSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
+/// <summary>
+/// SearchSubGroups() Methode zum Suchen von Sub-Gruppen in einer Domäne 
+/// Wichtig!!!:liefert nur ein Suchergebnis (PrincipalSearchResult)
+/// Zum umwandeln in ein DirectoryEntry muss ConvertPrincipalsToDirectoryEntries();
+/// benutzt werden oder wenn man gleich ein DirectoryEntry will muss man GetUsersDirectoryEntry() benutzen
+/// </summary>
+/// <param name="filter"></param>
+/// <param name="searchmode"></param>
+/// <returns></returns>
+public List<GroupPrincipal> SearchSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
             //Beim erstauruf der Methode ist die Liste null
             //kann auch dafür verwedet werden beim erstaufruf Nutzer und Gruppen auszuschileßen
@@ -589,7 +580,7 @@ namespace ActiveDirectoryAccess
 
 
         /// <summary>
-        /// GetUsers() Methode zum Suchen von Usern und (Usern von Sub  in Gruppe 
+        /// GetGroupMembers() Methode zum Suchen von Usern und (Usern von Sub  in Gruppe 
         /// </summary>
         /// <param name="filter"></param>
         /// <param name="searchmode"></param>
@@ -599,7 +590,12 @@ namespace ActiveDirectoryAccess
             return SearchMembersinGroup(groupname,searchsubgroupmembers,checkredundancy);           
         }
 
-
+        /// <summary>
+        /// GetSubGroups() Methode zum Suchen von Usern und (Usern von Sub  in Gruppe 
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="searchmode"></param>
+        /// <returns></returns>
         public List<GroupPrincipal> GetSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
             return SearchSubGroups(groupname, searchsubgroupmembers,checkredundancy);
@@ -623,8 +619,39 @@ namespace ActiveDirectoryAccess
         }
 
 
-    }
+        //login
+        public bool IsAuthenticated(string usr, string pwd)
+        {
+            bool authenticated = false;
 
+            try
+            {
+                DirectoryEntry entry = new DirectoryEntry(this._domain, usr, pwd);
+                object nativeObject = entry.NativeObject;
+                authenticated = true;
+            }
+            catch (DirectoryServicesCOMException cex)
+            {
+                //not authenticated; reason why is in cex 
+            }
+            catch (Exception ex)
+            {
+                //not authenticated due to some other exception [this is optional] 
+            }
+            return authenticated;
+        }
+
+        public bool LoginCheck(string user,string pw)
+        {
+            PrincipalContext pc = new PrincipalContext(ContextType.Domain, _domain);
+            
+                // validate the credentials
+                return pc.ValidateCredentials(user, pw);
+            
+            
+        }
+
+    }
 
 }
 

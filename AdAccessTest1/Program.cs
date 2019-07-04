@@ -31,7 +31,7 @@ namespace AdAccessTest1
                for (int i = 0; i < gp.Count; i++)
                 Console.WriteLine(gp[i].Name);
 
-            ad.test();
+            Console.WriteLine(ad.LoginCheck("romc","Herdsfsdfsd,"));
             Console.ReadKey();
         }
     }

@@ -17,15 +17,15 @@ namespace ActiveDirectoryAccess
     {
 
 
-
+        //TIPP:%SystemRoot%\SYSTEM32\rundll32.exe dsquery,OpenQueryWindow 
 
 
 
         //Für die Suche nach Beschreibung (in der Schule steht hier die Schüler Id
 
-         /// <summary>
-         /// Filter optionen der Benutzer Suche
-         /// </summary>         
+        /// <summary>
+        /// Filter optionen der Benutzer Suche
+        /// </summary>         
         public enum UserFilter
         {
             SamAccountName,
@@ -106,14 +106,14 @@ namespace ActiveDirectoryAccess
             for (int i = 0; i < searchmode.Length; i++)
             {
 
-                switch (i)
+                switch (searchmode[i])
                 {
 
 
                     //Den Suchparameter angeben
                     case (int)UserFilter.UserName:
                         //Layout für Namen Suche = Vorname Nachname
-                        user.Name = filter.ToString();
+                        user.Name = filter[i].ToString();
                         break;
                     case (int)UserFilter.SamAccountName:
                         user.SamAccountName = filter[i].ToString();
@@ -172,11 +172,13 @@ namespace ActiveDirectoryAccess
 
             //Den Sucher anlegen und ihm die Suchkriterien
             //(unser User-Objekt) übergeben
+            
             PrincipalSearcher pS = new PrincipalSearcher();
             pS.QueryFilter = user;
 
             //Die Suche durchführen
             PrincipalSearchResult<Principal> results = pS.FindAll();
+            
             return results;
 
         }
@@ -202,7 +204,7 @@ namespace ActiveDirectoryAccess
 
             for (int i = 0; i < searchmode.Length; i++)
             {
-                switch (i)
+                switch (searchmode[i])
                 {
 
 
@@ -253,6 +255,8 @@ namespace ActiveDirectoryAccess
 
         }
 
+
+        [Obsolete("Nur benutzen falls DirectoryEntry gebraucht wir ansonten Get* Methoden benutzen")]
         /// <summary>
         /// Wandelt Principal in DirectoryEntry um
         /// </summary>
@@ -265,6 +269,9 @@ namespace ActiveDirectoryAccess
                 results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
 
         }
+
+
+        [Obsolete("Nur benutzen falls DirectoryEntry gebraucht wir ansonten Get* Methoden benutzen")]
         /// <summary>
         /// Wandelt Principal in DirectoryEntry um
         /// </summary>
@@ -277,6 +284,8 @@ namespace ActiveDirectoryAccess
                 results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject())).ToList();
 
         }
+
+        [Obsolete("Nur benutzen falls DirectoryEntry gebraucht wir ansonten Get* Methoden benutzen")]
         /// <summary>
         /// Wandelt Principal in DirectoryEntry um
         /// </summary>
@@ -305,7 +314,7 @@ namespace ActiveDirectoryAccess
             
         }
 
-
+        [Obsolete("Bitte GetUsers Benutzen")]
         /// <summary>
         /// GetMembersinGroupDirectoryEntry() Methode zum Suchen von Benutzern in Domäne
         /// und umwandlung in DirectoryEntry
@@ -320,6 +329,7 @@ namespace ActiveDirectoryAccess
 
         }
 
+        [Obsolete("Bitte GetGroups Benutzen")]
         /// <summary>
         /// GetGroupsDirectoryEntry() Methode zum Suchen von Gruppen in Domäne
         /// und umwandlung in DirectoryEntry
@@ -330,6 +340,14 @@ namespace ActiveDirectoryAccess
         public List<DirectoryEntry> GetGroupsDirectoryEntry(object[] filter, int[] seachmode)
         {
             return ConvertPrincipalsToDirectoryEntries(SearchGroups(filter, seachmode));
+        }
+
+
+        [Obsolete("verltete methjode")]
+
+        public void test()
+        {
+            MessageBox.Show("Hello");
         }
 
 
@@ -512,7 +530,7 @@ namespace ActiveDirectoryAccess
 
         }
 
-
+        [Obsolete("Bitte GetGroupMembers Benutzen")]
         /// <summary>
         /// GetMembersinGroupDirectoryEntry() Methode zum Suchen von Benutzern in Gruppen
         /// und umwandlung in DirectoryEntry
@@ -520,11 +538,74 @@ namespace ActiveDirectoryAccess
         /// <param name="filter"></param>
         /// <param name="searchmode"></param>
         /// <returns></returns>
+
         public List<DirectoryEntry> GetMembersinGroupDirectoryEntry(string groupname, bool searchsubgroupmembers)
         {
             return ConvertPrincipalsToDirectoryEntries(SearchMembersinGroup(groupname, searchsubgroupmembers));
 
         }
+
+        /// <summary>
+        /// GetUsers() Methode zum Suchen von Usern in Domäne 
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="searchmode"></param>
+        /// <returns></returns>
+        public List<UserPrincipal> GetUsers(object[] filter, int[] searchmode)
+        {
+            List<UserPrincipal> up = new List<UserPrincipal>();
+            PrincipalSearchResult<Principal> ps  = SearchUsers(filter,searchmode);
+            foreach(Principal p in ps)
+            {
+                if(p is UserPrincipal)
+                {
+                    up.Add((UserPrincipal)p);
+                }
+            }
+
+            return up;
+        }
+
+        /// <summary>
+        /// GetGroups() Methode zum Suchen von Gruppen in Domäne 
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="searchmode"></param>
+        /// <returns></returns>
+        public List<GroupPrincipal> GetGroups(object[] filter, int[] searchmode)
+        {
+            List<GroupPrincipal> gp = new List<GroupPrincipal>();
+            PrincipalSearchResult<Principal> ps = SearchGroups(filter, searchmode);
+            foreach (Principal p in ps)
+            {
+                if (p is GroupPrincipal)
+                {
+                    gp.Add((GroupPrincipal)p);
+                }
+            }
+
+            return gp;
+        }
+
+
+        /// <summary>
+        /// GetUsers() Methode zum Suchen von Usern und (Usern von Sub  in Gruppe 
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="searchmode"></param>
+        /// <returns></returns>
+        public List<UserPrincipal> GetGroupMembers(string groupname,bool searchsubgroupmembers,List<Principal> checkredundancy = null)
+        {          
+            return SearchMembersinGroup(groupname,searchsubgroupmembers,checkredundancy);           
+        }
+
+
+        public List<GroupPrincipal> GetSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
+        {
+            return SearchSubGroups(groupname, searchsubgroupmembers,checkredundancy);
+        }
+
+        [Obsolete("Bitte GetSubGroups Benutzen")]
 
         /// <summary>
         /// GetMembersinGroupsDirectoryEntry() Methode zum Suchen von Sub-Gruppen in einer Gruppe 
@@ -533,6 +614,8 @@ namespace ActiveDirectoryAccess
         /// <param name="filter"></param>
         /// <param name="searchmode"></param>
         /// <returns></returns>
+
+
         public List<DirectoryEntry> GetSubGroupsDirectoryEntry(string groupname, bool searchsubgroupmembers)
         {
             return ConvertPrincipalsToDirectoryEntries(SearchSubGroups(groupname, searchsubgroupmembers));

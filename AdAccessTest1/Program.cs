@@ -15,7 +15,7 @@ namespace AdAccessTest1
             Console.WriteLine("Test123");
         
             AdAccess ad = new AdAccess("BSZ.local");
-            List<DirectoryEntry> de = ad.GetUsersDirectoryEntry(new string[] { "*rom*" }, new int[] { (int)AdAccess.UserFilter.SamAccountName });
+            List<DirectoryEntry> de = ad.GetUsersDirectoryEntry(new string[] { "*" }, new int[] { (int)AdAccess.UserFilter.SamAccountName });
            
             //1. Test Namen ausgabe
             Console.WriteLine(de.Count);

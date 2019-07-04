@@ -23,7 +23,9 @@ namespace ActiveDirectoryAccess
 
         //Für die Suche nach Beschreibung (in der Schule steht hier die Schüler Id
 
-          
+         /// <summary>
+         /// Filter optionen der Benutzer Suche
+         /// </summary>         
         public enum UserFilter
         {
             SamAccountName,
@@ -44,6 +46,9 @@ namespace ActiveDirectoryAccess
 
 
         //GroupScope = Gruppen Typ (Global,Universal,Lokal)
+        /// <summary>
+        /// Filter optionen der Gruppen Suche
+        /// </summary>       
         public enum GroupFilter
         {
             SamAccountName,
@@ -178,7 +183,7 @@ namespace ActiveDirectoryAccess
 
 
         /// <summary>
-        ///       /// SearchGroups() Methode zum Suchen von Gruppen in einer Domäne 
+        /// SearchGroups() Methode zum Suchen von Gruppen in einer Domäne 
         /// Wichtig!!!:liefert nur ein Suchergebnis (PrincipalSearchResult)
         /// Zum umwandeln in ein DirectoryEntry muss ConvertPrincipalsToDirectoryEntries();
         /// benutzt werden oder wenn man gleich ein DirectoryEntry will muss man GetUsersDirectoryEntry() benutzen
@@ -238,7 +243,7 @@ namespace ActiveDirectoryAccess
 
 
             //Den Sucher anlegen und ihm die Suchkriterien
-            //(unser User-Objekt) übergeben
+            //(unser Gruppen-Objekt) übergeben
             PrincipalSearcher pS = new PrincipalSearcher();
             pS.QueryFilter = group;
 
@@ -339,30 +344,40 @@ namespace ActiveDirectoryAccess
         /// <returns></returns>
         public List<UserPrincipal> SearchMembersinGroup(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
+            //Beim erstauruf der Methode ist die Liste null
+            //kann auch dafür verwedet werden beim erstaufruf Nutzer und Gruppen auszuschileßen
+
             if (checkredundancy == null)
             {
                 checkredundancy = new List<Principal>();
             }
 
             List<UserPrincipal> users = new List<UserPrincipal>();
+
+            // Einen Kontext zur entsprechenden Windows Domäne erstellen
             PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
                 _domain);
       
-
+            //Gruppe bestimmen
             GroupPrincipal group = GroupPrincipal.FindByIdentity(domainContext, groupname);
+
+
             if (group != null)
             {
+                //Mitglieder der Gruppe herausholen
                 PrincipalSearchResult<Principal> results = group.GetMembers();
 
                
 
-
+                
                 foreach (Principal p in results)
                 {
+                    //Nach Mitgileder in den Subgruppen Suchen
                     if (p is GroupPrincipal && searchsubgroupmembers)
                     {
                         bool found = false;
 
+                        //Verhindern von endlosschleifen (z.B Gruppe1 mitglied Gruppe 3 mitglied Gruppe 2 mitglied Gruppe 1)
                         foreach (Principal p2 in checkredundancy)
                         {
                             if (p2 is GroupPrincipal)
@@ -377,12 +392,13 @@ namespace ActiveDirectoryAccess
                         }
 
                         if (!found)
-                        {
+                        {   //Rekursiver aufruf mit den SubGruppen
                             checkredundancy.Add((GroupPrincipal)p);
                             users.AddRange(SearchMembersinGroup(p.SamAccountName, true, checkredundancy));
                         }
                     }
 
+                    //Falls user wenden die benutzer zur liste hinzugefügt
                     else if (p is UserPrincipal)
                     {
                         bool found = false;
@@ -403,6 +419,8 @@ namespace ActiveDirectoryAccess
                         if (!found)
                         {
                             checkredundancy.Add(p);
+
+                            //Benutzer wird zur liste hindzugefügt
                             users.Add((UserPrincipal)p);
                         }
                     }
@@ -429,27 +447,33 @@ namespace ActiveDirectoryAccess
         /// <returns></returns>
         public List<GroupPrincipal> SearchSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
+            //Beim erstauruf der Methode ist die Liste null
+            //kann auch dafür verwedet werden beim erstaufruf Nutzer und Gruppen auszuschileßen
             if (checkredundancy == null)
             {
                 checkredundancy = new List<Principal>();
             }
+
+
+
             List<GroupPrincipal> groups = new List<GroupPrincipal>();
+            // Einen Kontext zur entsprechenden Windows Domäne erstellen
             PrincipalContext domainContext = new PrincipalContext(ContextType.Domain,
                 _domain);
 
-
+            //Gruppe bestimmen
             GroupPrincipal group = GroupPrincipal.FindByIdentity(domainContext, groupname);
 
             if (group != null)
             {
                 PrincipalSearchResult<Principal> results = group.GetMembers();
-               
 
 
+                //Nach Subgruppen Suchen
                 foreach (Principal p in results)
                 {
 
-
+                    //Auf redundanz prüfen
                     if (p is GroupPrincipal)
                     {
                         bool found = false;
@@ -471,6 +495,7 @@ namespace ActiveDirectoryAccess
                             checkredundancy.Add((GroupPrincipal)p);
                             groups.Add((GroupPrincipal)p);
 
+                            //Falls auch Subgruppen in den Subgruppen gesucht werden sollen
                             if (searchsubgroupmembers)
                             {
                                 groups.AddRange(SearchSubGroups(p.SamAccountName, true, checkredundancy));

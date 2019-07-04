@@ -256,11 +256,24 @@ namespace ActiveDirectoryAccess
 
         public List<DirectoryEntry> ConvertPrincipalsToDirectoryEntries(List<GroupPrincipal> results)
         {
-          
 
-                
+
+            List<DirectoryEntry> de = new List<DirectoryEntry>();
                     //Umwandlung Principal->DirectoryEntry
-                  return results.ToList().Cast<Principal>().Select(pc => (DirectoryEntry)pc.GetUnderlyingObject()).ToList();
+            foreach(Principal pc in results)
+            {
+                try
+                {
+                    de.Add((DirectoryEntry)pc.GetUnderlyingObject());
+                }
+
+                catch(Exception ex)
+                {
+                    
+                }
+            }
+
+            return de;
 
             
            
@@ -271,13 +284,13 @@ namespace ActiveDirectoryAccess
 
 
 
-        public List<DirectoryEntry> GetUsers(object[] filter, int[] searchmode)
+        public List<DirectoryEntry> GetUsersDirectoryEntry(object[] filter, int[] searchmode)
         {
             return ConvertPrincipalsToDirectoryEntries(SearchUsers(filter, searchmode));
 
         }
 
-        public List<DirectoryEntry> GetGroups(object[] filter, int[] seachmode)
+        public List<DirectoryEntry> GetGroupsDirectoryEntry(object[] filter, int[] seachmode)
         {
             return ConvertPrincipalsToDirectoryEntries(SearchGroups(filter, seachmode));
         }
@@ -316,6 +329,7 @@ namespace ActiveDirectoryAccess
                                 {
                                     found = true;
                                     break;
+                                    
                                 }
                             }
                         }
@@ -339,6 +353,7 @@ namespace ActiveDirectoryAccess
                                 {
                                     found = true;
                                     break;
+
                                 }
                             }
                         }
@@ -362,6 +377,7 @@ namespace ActiveDirectoryAccess
 
 
         //Sicherheit Prinzipal fix
+        //only bad fixed now with a try {} catch{} without exception handling
 
         public List<GroupPrincipal> SearchSubGroups(string groupname, bool searchsubgroupmembers, List<Principal> checkredundancy = null)
         {
@@ -425,13 +441,13 @@ namespace ActiveDirectoryAccess
 
 
 
-        public List<DirectoryEntry> GetMembersinGroup(string groupname, bool searchsubgroupmembers)
+        public List<DirectoryEntry> GetMembersinGroupDirectoryEntry(string groupname, bool searchsubgroupmembers)
         {
             return ConvertPrincipalsToDirectoryEntries(SearchMembersinGroup(groupname, searchsubgroupmembers));
 
         }
 
-        public List<DirectoryEntry> GetSubGroups(string groupname, bool searchsubgroupmembers)
+        public List<DirectoryEntry> GetSubGroupDirectoryEntrys(string groupname, bool searchsubgroupmembers)
         {
             return ConvertPrincipalsToDirectoryEntries(SearchSubGroups(groupname, searchsubgroupmembers));
 

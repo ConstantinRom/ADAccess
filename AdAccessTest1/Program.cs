@@ -13,7 +13,7 @@ namespace AdAccessTest1
         static void Main(string[] args)
         {
             Console.WriteLine("Test123");
-            Console.ReadKey();
+        
             AdAccess ad = new AdAccess("BSZ.local");
             List<DirectoryEntry> de = ad.GetUsersDirectoryEntry(new string[] { "*rom*" }, new int[] { (int)AdAccess.UserFilter.SamAccountName });
            
@@ -37,6 +37,8 @@ namespace AdAccessTest1
             de = ad.GetSubGroupsDirectoryEntry("Benutzer", true);
             for (int i = 0; i < de.Count; i++)
                 Console.WriteLine(de[i].Properties["SamAccountName"].Value.ToString());
+
+           
             Console.ReadKey();
         }
     }

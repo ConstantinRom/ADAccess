@@ -31,8 +31,8 @@ namespace AdAccessTest1
                for (int i = 0; i < gp.Count; i++)
                 Console.WriteLine(gp[i].Name);
 
-            Console.WriteLine(ad.LoginCheck("romc","Herdsfsdfsd,"));
-            Console.ReadKey();
+               GroupPrincipal gp1 = ad.GetGroup("test");
+               UserPrincipal up1 = ad.GetUser("conr");
         }
     }
 }

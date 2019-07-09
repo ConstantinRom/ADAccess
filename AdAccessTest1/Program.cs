@@ -31,8 +31,8 @@ namespace AdAccessTest1
                for (int i = 0; i < gp.Count; i++)
                 Console.WriteLine(gp[i].Name);
 
-               GroupPrincipal gp1 = ad.GetGroup("test");
-               UserPrincipal up1 = ad.GetUser("conr");
+               GroupPrincipal gp1 = ad.GetGroup("BFI11a");
+               UserPrincipal up1 = ad.GetUser("romc");
         }
     }
 }
